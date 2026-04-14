@@ -18,7 +18,7 @@ r_ef = diff(F_el_r, u);
 expressoes = [F_r, r_ef];
 disp(expressoes)
 
-[h_i_num, k_num, d_num, g_num, m_num] = deal(sqrt(0.5^2 - 0.2^2), 15000, 0.2, 9.81, 200 + 80);
+[h_i_num, k_num, d_num, g_num, m_num] = deal(sqrt(0.5^2 - 0.2^2), 15000, 0.2, 9.81, 200 + 02);
 intervalo_u = 0:0.0001:h_i_num;
 intervalo_u_cm = intervalo_u.*100;
 
@@ -46,11 +46,6 @@ end
 disp(raizes_forca)
 disp(valores_rigidez)
 
-raizes_rigidez = zeros(3, 1);
-for i = (1:3)
-    raizes_rigidez(i) = fzero(funcoes{2, i}, 0.27);
-end
-disp(raizes_rigidez);
 
 for i = (1:2)
     figure(i)
