@@ -3,7 +3,7 @@ MatrizRigidez = @MatrizRigidez;
 VetorKi = @VetorKi;
 
 k_min = 30*10^3;
-delta_k = 70 + 04;
+delta_k = (70 + 04)*10^3;
 b = 0.15;
 
 n_1 = 30;
@@ -11,13 +11,15 @@ n_2 = 10;
 n = [n_1; n_2];
 
 F_1 = zeros(n_1, 1);
-F_1(end) = 50;
+F_1(n_1) = 50;
 
 F_2 = zeros(n_2, 1);
-F_2(end) = 100;
+F_2(n_2) = 100;
 F_2(5) = -50;
 
 F = {F_1; F_2};
+
+disp(F{2})
 
 for j = 1:2
     k = VetorKi(n(j), k_min, delta_k, b);
