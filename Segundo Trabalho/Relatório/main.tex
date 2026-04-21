@@ -1,0 +1,235 @@
+\documentclass[12pt,a4paper]{article}
+
+\usepackage{indentfirst}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[brazil]{babel}
+\usepackage{amsmath}
+\usepackage{geometry}
+\usepackage{setspace}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{setspace}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{caption}
+\usepackage[colorlinks=true,
+            linkcolor=blue,
+            citecolor=blue,
+            urlcolor=blue]{hyperref}
+
+\definecolor{keywordcolor}{rgb}{0,0,0.6}
+\definecolor{commentcolor}{rgb}{0,0.5,0}
+\definecolor{stringcolor}{rgb}{0.6,0,0}
+\definecolor{backgroundcolor}{rgb}{0.95,0.95,0.95}
+
+\lstset{
+    language=Matlab,
+    backgroundcolor=\color{backgroundcolor},
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{keywordcolor}\bfseries,
+    commentstyle=\color{commentcolor}\itshape,
+    stringstyle=\color{stringcolor},
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+    stepnumber=1,
+    numbersep=8pt,
+    frame=none,
+    rulecolor=\color{black},
+    breaklines=true,
+    showstringspaces=false
+}
+
+\setstretch{1.2}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.2\baselineskip}
+\newcommand{\MATLAB}{\textsc{Matlab}}
+
+\geometry{margin=2.5cm}
+\onehalfspacing
+
+\lstset{
+  basicstyle=\ttfamily\small,
+  frame=single,
+  breaklines=true
+}
+
+\setlength{\parindent}{2em}
+
+\begin{document}
+
+\begin{titlepage}
+    \begin{center}
+		\Huge{Universidade de São Paulo}\\
+		\large{Escola de Engenharia de São Carlos}\\ 
+        %\vspace{.5cm}
+        \large{SEM0530 - Problemas de Engenharia Mecatrônica II}\\ 
+        \vspace{5cm}
+		\Large{Modelagem da rigidez de uma estrutura unidimensional}\\ 
+		\vspace{0.3cm}
+    
+    \end{center}
+\vspace{5cm}
+	\begin{flushleft}
+		
+		Aluno: Enzo Larger Manfio  Nº USP: 16863802\\
+        Docente: Prof. Dr. Kayc Wayhs Lopes\\
+	
+    \end{flushleft}
+	
+	\vfill
+	\begin{center}
+		\vspace{5cm}
+			 São Carlos, Abril de 2026
+	\end{center}
+\end{titlepage}
+
+\newpage
+\tableofcontents
+
+
+\newpage
+\section{Introdução}
+
+Na análise de estruturas frequentemente é feita a modelagem destas como conjuntos de elementos discretos. Deste modo, fenômenos mecânicos podem ser estudados como o agregado de fenômenos individuais mais simples, com o uso de métodos computacionais otimizados. Nesta prática, será evidenciado um exemplo deste modo de análise a partir do estudo da deformação da estrutura unidimensional representada na figura \ref{estrutura}, uma vez sujeita a forças axiais.
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.5\textwidth]{estrutura.pdf}
+    \caption{Estrutura a ser analisada}
+    \label{estrutura}
+\end{figure}
+\par Mais especificamente, a estrutura será modelada como um número arbitrário de elementos discretos, de modo a encontrar uma expressão generalizada para a Matriz de Rigidez que
+relaciona os deslocamentos de cada elemento com as forças aplicadas à estrutura.
+Por fim, será desenvolvido um programa na linguagem de programação Matlab que, a
+partir de certos parâmetros da estrutura, determine a sua Matriz de Rigidez e calcule o
+deslocamento dos elementos uma vez sujeitos a determinadas forças.
+\vspace{0.5\baselineskip}
+
+\section{Metodologia}
+
+\subsection{Modelagem matemática}
+\vspace{0.5\baselineskip}
+
+\par A Estrutura será modelada como sendo um conjunto de n molas em série, como representado na figura \ref{molas}.
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.5\textwidth]{molas.pdf}
+    \caption{Estrutura representada como conjunto de n molas em série}
+    \label{molas}
+\end{figure}
+Para cada mola, a sua constante elástica $k_i$ é dada por \eqref{equação k}.
+\begin{equation}
+\label{equação k}
+    k_n = k_{min} + \Delta{}e^{-bi}
+\end{equation}
+\par O i-ésimo ponto analisado está sujeito à uma força externa correspondente, $F_i$, e as forças elásticas das molas que ligam o ponto i-1 à i e i à i+1,
+Com isso, considerando o ponto em equilíbrio e o sentido das forças e deslocamentos na figura \ref{estrutura}, temos:
+\begin{math}
+\begin{center}
+    \sum{F_x} = 0 \\ \nonumber
+    F_i + F_{Ki+1} - F_{Ki} = 0 \\ \nonumber
+    F_i + k_{i+1}(u_{i+1} - u_k) - k_i(u_i - u_{k-1}) = 0 \\\nonumber
+\end{center}
+\end{math}
+\begin{equation}
+    \label{Equação Força}
+    F_i = -k_iu_{i-1} + (k_i + k_{i +1})u_i - k_{i+1}u_{i+1}
+\end{equation}
+ \par Em que $u_i$ e $k_i$ são deslocamento e constante elástica da mola correspondente ao i-ésimo elemento. Com isso, é possível definir um sistema matricial representando a relação entre os
+ vetores $\textbf{u} = \{u_1, u_2,  ... u_n\}^T$ e $\textbf{F} = \{F_1, F_2, ... F_n\}^T$:
+
+ \begin{equation}
+    \label{Sistema}
+    \textbf{Mu} = \textbf{F}
+ \end{equation}
+Em que
+\begin{equation}
+    \label{MatrizRigidez}
+    \textbf{M} =
+    \begin{bmatrix}
+    k_1 + k_2 & -k_2 & 0 & \cdots & 0 \\
+    -k_2 & k_2 + k_3 & - k_3 &\cdots & 0 \\
+    0 & -k_3& k_3 + k_4 &\cdots & 0 \\
+    \vdots & \vdots & \vdots & \ddots & \vdots \\
+    0 & 0 & 0 & \cdots & k_n
+    \end{bmatrix}
+\end{equation}
+
+\vspace{0.5\baselineskip}
+
+\noindent constitui a Matriz de Rigidez do sistema, a qual, por ser simétrica, é necessariamente inversível, de modo que o sistema \eqref{Sistema} possui solução única.
+
+\vspace{0.5\baselineskip}
+
+\subsection{Implementação no \MATLAB}
+
+\par Em um arquivo próprio, foi definida a função VetorKi(), que recebe como argumento parâmetros os parâmetros gerais do sistema de molas ($k_{min}$ e b) e o número de molas, retornando o vetor das constantes elásticas das molas, calculadas com \eqref{equação k}.
+
+\begin{lstlisting}[language=Matlab, 
+caption = {Função para criação do vetor de constantes elásticas.},
+label = {lst:funcao_ki}]
+function k_i = VetorKi(n, k_min, delta_k, b)
+    k_i = zeros(n, 1);
+    for i = 1:n
+        k_i(i) = k_min + delta_k*exp(-b*i);
+    end
+end
+\end{lstlisting}
+
+\par Em um outro arquivo, foi definida a função MatrizRigidez() para, a partir do vetor de constantes de elasticidade, construir a matriz de rigidez correspondente ao sistema, utilizando \eqref{Equação Força} para cada linha da matriz.
+\begin{lstlisting}[language=Matlab, 
+caption = {Função para criação da matriz de rigidez},
+label = {lst:funcao_matriz}]
+function Matriz = MatrizRigidez(k)
+    n = length(k);
+    Matriz = zeros(n, n);
+    Matriz(1, 1) = k(1);
+    Matriz(n, n) = k(n);
+    if n>1
+        Matriz(1, 1) = k(1) + k(2);
+        Matriz(1, 2) = -k(2);
+        Matriz(n, n-1) = -k(n);
+    end
+    if n > 2
+        for i = 2:n-1
+            Matriz(i, i-1) = -k(i);
+            Matriz(i, i) = k(i) + k(i+1) ;
+            Matriz(i, i + 1) = -k(i+1);
+        end
+    end
+end
+\end{lstlisting}
+\par Por fim, utilizou-se a função linsolve() oferecida pelo Matlab para resolver o sistema \eqref{Sistema} e foram plotados os gráficos de $k_i$ e $u_i$ em função de i.
+\section{Resultados}
+
+\noindent Foi considerada a estrutura sob duas configurações:
+\begin{itemize}
+\item 30 molas, uma força de 50 N é aplicada na extremidade livre.
+\item 10 molas, uma força de -50 N é aplicada no meio da estrutura (i = 5) e uma de 100 N é aplicada na extremidade livre.
+\end{itemize}
+Para ambas, considerou-se $k_{min} = 30$ kN/m, b = 0,15 e $\Delta{k} = (70 + 0.2\cdot{02})$ kN/m.
+\subsection{Configuração 1}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\textwidth]{Figure_1.pdf}
+    \caption{Rigidez e deslocamento de cada elemento para a configuração 1}
+    \label{grafico 1}
+\end{figure}
+\par Como o deslocamento é inversamente proporcional à rigidez sob força constante (Caso da Configuração 1, já que a força aplicada na extremidade é transmitida ao longo da estrutura), conforme a rigidez de cada elemento decresce exponencialmente o deslocamento de cada elemento aumenta (já que considerou-se o sentido da tração como positivo).
+\subsection{Configuração 2}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\textwidth]{Figure_2.pdf}
+    \caption{Rigidez e deslocamento de cada elemento para a configuração 2}
+    \label{grafico 2}
+\end{figure}
+
+\par É possível observar que o gráfico dos deslocamentos até i = 5 é parecido com o da configuração 1. Isso ocorre pois, somando as forças de tração de 100 N e de compressão de 50 N, a secção correspondente à primeira metade do corpo está efetivamente tracionada por 50 N, assim como a estrutura na configuração 1. A partir de i = 5, a estrutura não está mais sujeita à essa força de compressão, resultando em um aumento no crescimento do deslocamento.
+
+\section{Conclusão}
+
+\par Neste trabalho, foi demonstrada a modelagem de estruturas mecânicas a partir de sua discretização com o estudo de uma estrutura unidimensional como um conjunto de molas em série. Uma vez considerado o equilíbrio de cada extremidade livre das molas, foi possível encontrar uma expressão geral para a Matriz de Rigidez que relaciona o deslocamento destas e as forças aplicadas.
+\par Por fim, foram desenvolvidos scripts em Matlab que calculam a matriz de rigidez e resolvem o sistema linear correspondente para determinar os deslocamentos de pontos da estrutura uma vez aplicadas forças sobre estes, sendo testadas duas configurações para a estrutura, com os resultados obtidos para a deformação desta sendo fisicamente consistentes em ambas.
+\end{document}
