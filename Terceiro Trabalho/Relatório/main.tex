@@ -1,0 +1,198 @@
+\documentclass[12pt,a4paper]{article}
+
+\usepackage{indentfirst}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[brazil]{babel}
+\usepackage{amsmath}
+\usepackage{geometry}
+\usepackage{setspace}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{setspace}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{caption}
+\usepackage[colorlinks=true,
+            linkcolor=blue,
+            citecolor=blue,
+            urlcolor=blue]{hyperref}
+
+\definecolor{keywordcolor}{rgb}{0,0,0.6}
+\definecolor{commentcolor}{rgb}{0,0.5,0}
+\definecolor{stringcolor}{rgb}{0.6,0,0}
+\definecolor{backgroundcolor}{rgb}{0.95,0.95,0.95}
+
+\lstset{
+    language=Matlab,
+    backgroundcolor=\color{backgroundcolor},
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{keywordcolor}\bfseries,
+    commentstyle=\color{commentcolor}\itshape,
+    stringstyle=\color{stringcolor},
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+    stepnumber=1,
+    numbersep=8pt,
+    frame=none,
+    rulecolor=\color{black},
+    breaklines=true,
+    showstringspaces=false
+}
+
+\setstretch{1.2}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.2\baselineskip}
+\newcommand{\MATLAB}{\textsc{Matlab}}
+
+\geometry{margin=2.5cm}
+\onehalfspacing
+
+\lstset{
+  basicstyle=\ttfamily\small,
+  frame=single,
+  breaklines=true
+}
+
+\setlength{\parindent}{2em}
+
+\begin{document}
+
+\begin{titlepage}
+    \begin{center}
+		\Huge{Universidade de São Paulo}\\
+		\large{Escola de Engenharia de São Carlos}\\ 
+        %\vspace{.5cm}
+        \large{SEM0530 - Problemas de Engenharia Mecatrônica II}\\ 
+        \vspace{5cm}
+		\Large{Análise numérica da cinemática do movimento circular de uma partícula}\\ 
+		\vspace{0.3cm}
+    
+    \end{center}
+\vspace{5cm}
+	\begin{flushleft}
+		
+		Aluno: Enzo Larger Manfio  Nº USP: 16863802\\
+        Docente: Prof. Dr. Kayc Wayhs Lopes\\
+	
+    \end{flushleft}
+	
+	\vfill
+	\begin{center}
+		\vspace{5cm}
+			 São Carlos, Maio de 2026
+	\end{center}
+\end{titlepage}
+
+\newpage
+\tableofcontents
+
+
+\newpage
+\section{Introdução}
+\par A Integração de funções matemáticas é uma operação fundamental para qualquer aplicação moderna. Contudo, frequentemente é mais generalizável e eficiente calcular uma integral numericamente, ao invés de determina-la analiticamente.
+\par Neste trabalho, a integração numérica será utilizada para o estudo da cinemática de uma partícula em movimento circular. Mais especificamente, sabendo a expressão da aceleração tangencial em função da distância percorrida, será desenvolvido um programa na linguagem Matlab que determine os gráficos do módulo da velocidade e aceleração total em função da distância percorrida, bem como determinar o tempo necessário para uma determinada distância percorrida, sendo utilizada a funcionalidade de integração numérica oferecida pela linguagem.
+\vspace{0.5\baselineskip}
+
+\section{Metodologia}
+
+\vspace{0.5\baselineskip}
+\subsection{Modelagem matemática}
+\noindent A aceleração tangencial $a_t$ em função do deslocamento s é dada por \eqref{aceleração_tangencial}:
+\begin{equation}
+    \label{aceleração_tangencial}
+    a_t = 4+0.01Ns - 0.01s^2 + e^{-s/N}.
+\end{equation}
+Em que N = 2. Com isso, sabendo as velocidade e posição inicial e utilizando a relação diferencial \eqref{matematicos_sofrendo}, é possível expressar o módulo da velocidade tangencial em função do deslocamento:
+\begin{align}
+    \label{matematicos_sofrendo}
+    vdv &= a_tds \\ \nonumber
+    \implies \int_{v_0}^{v} vdv &= \int_{s_0}^{s} a_tds \\ \nonumber
+    \implies \left. \frac{v^2}{2} \right|_{v_0}^{v} &= \int_{s_0}^{s} a_tds \\
+    \label{torriceli_melhorado}
+    \implies v &= \sqrt{v_0^2 + 2\int_{s_0}^{s} a_tds}
+\end{align}
+
+Com a velocidade inicial sendo dada por \eqref{v_0}.
+\begin{equation}
+    \label{v_0}
+    v_0 = 20 + 0.35\sqrt{N} \text{ }m/s
+\end{equation}
+
+\par O vetor aceleração da partícula é composto pela soma dos vetores aceleração tangencial ($a_t$) e radial ($a_r$), os quais são ortogonais entre si, de modo que o módulo da aceleração total, a, é dada por \eqref{pitagoras}:
+\begin{equation}
+    \label{pitagoras}
+    a = \sqrt{a_t^2 + a_r^2}
+\end{equation}
+$a_t$ é dada por \eqref{aceleração_tangencial}, enquanto $a_r$ é dada por \eqref{aceleração_radial}.
+\begin{equation}
+    \label{aceleração_radial}
+    a_r = \frac{v^2}{r}
+\end{equation}
+Em que r é o raio da trajetória da partícula, o qual vale 100. Por fim, o tempo t necessário para percorrer uma distância $s - s_0$ pode ser determinado partindo da definição de velocidade \eqref{definição_velocidade}.
+\begin{align}
+    \label{definição_velocidade}
+    v&= \frac{ds}{dt} \\ \nonumber
+    \implies \frac{dt}{ds} &= \frac{1}{v} \\ \nonumber
+    \implies \int_{s_0}^{s} \frac{dt}{ds}ds &= \int_{v_0}^{v} \frac{1}{v}ds \\ \nonumber
+    \implies \int_{0}^{t}dt &= \int_{s_0}^{s} \frac{1}{v}ds \\
+    \label{um nome}
+    \implies t &= \int_{s_0}^{s} \frac{1}{v}ds
+\end{align}
+\vspace{0.5\baselineskip}
+\subsection{Implementação no \MATLAB}
+Em um arquivo próprio, foi definida a função da aceleração tangencial, em acordo com \eqref{aceleração_tangencial}. Com isso, em um outro arquivo próprio foi definida uma função para a velocidade que recebe como argumentos uma determinada função para a aceleração (em função do deslocamento), sua velocidade inicial e seus pontos inicial e final, utilizando \eqref{matematicos_sofrendo}.
+\begin{lstlisting}[language=Matlab, 
+caption = {Função para determinação da velocidade},
+label = {lst:funcao_v_s}]
+function v = v_s(s0, v0, at_s, s)
+    %Para receber s e retornar v como arrays
+    integral_at_ds = arrayfun(@(limite) integral(at_s, s0, limite), s);
+
+    v = sqrt(v0^2 + 2*integral_at_ds);
+end
+\end{lstlisting}
+\par Em um outro arquivo, foi declarada uma função para calcular a aceleração total, recebendo como argumento funções para a velocidade e aceleração tangencial (em função do deslocamento), e o ponto final do movimento, utilizando \eqref{definição_velocidade}.
+\begin{lstlisting}[language=Matlab, 
+caption = {Função para determinação da aceleração total},
+label = {lst:funcao_a_s}]
+function a = a_s(v_s, at_s, r, s)
+    ar = v_s(s)^2 / r;
+    a = sqrt(ar^2 + at_s(s)^2);
+end
+\end{lstlisting}
+\par Por fim, em um outro arquivo foi definida uma função para, recebendo como argumentos uma função para v (em função do deslocamento) e os ponto inicial e final do movimento da partícula, determinar o tempo necessário para realizar este movimento, utilizando \eqref{um nome}.
+\begin{lstlisting}[language=Matlab, 
+caption = {Função para determinação do tempo},
+label = {lst:funcao_a_s}]
+function t = t_s(v_s, s0, sf)
+    inversa_v = @(s) 1./v_s(s);
+    t = integral(inversa_v, s0, sf);
+end
+\end{lstlisting}
+\par Nas três funções, foi utilizada a função \textit{integral}, oferecida pelo Matlab, para calcular as integrais definidas. Ela utiliza o método da Quadratura Adaptativa Global, que divide a integral em subintervalos conforme o erro dos métodos numéricos de integração (trapézio, simpson, etc) aplicados, assim utilizando mais iterações para regiões com maior variação do integrante.
+\vspace{0.5\baselineskip}
+\section{Resultados}
+\subsection{Velocidade}
+O gráfico da velocidade em função do deslocamento pode ser visto em \ref{grafico_velocidade}, estando destacado a velocidade da partícula para s = 28,5 m, a qual vale 22.6707 m/s².
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7 \textwidth]{velocidade_deslocamento.pdf}
+    \caption{Velocidade em função do deslocamento}
+    \label{grafico_velocidade}
+\end{figure}
+\subsection{Aceleração}
+O gráfico da aceleração total em função do deslocamento pode ser visto em \ref{grafico_aceleração}, estando destacado a velocidade da partícula para s = 28,5 m, a qual vale 22.6707 m/s².
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7 \textwidth]{Aceleração_deslocamento.pdf}
+    \caption{Aceleração total em função do deslocamento}
+    \label{grafico_aceleração}
+\end{figure}
+\subsection{Tempo}
+O tempo necessário para a partícula percorrer 21.5 metros foi calculado como sendo 0.9672 segundos.
+
+\section{Conclusão}
+Neste trabalho, foi possível evidenciar o uso de métodos numéricos de integração, com a aplicação destes ao estudo da cinemática do movimento circular de uma partícula, de modo a, a partir de seus parâmetros de velocidade e posição iniciais e função para a aceleração tangencial em função do deslocamento, determinar os gráficos das velocidade e aceleração tangencial em função do deslocamento, bem como determinar o tempo necessário para a partícula realizar um deslocamento arbitrário.
+
+\end{document}
