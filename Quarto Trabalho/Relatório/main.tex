@@ -1,0 +1,201 @@
+\documentclass[12pt,a4paper]{article}
+
+\usepackage{indentfirst}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[brazil]{babel}
+\usepackage{amsmath}
+\usepackage{geometry}
+\usepackage{setspace}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{setspace}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{caption}
+\usepackage[colorlinks=true,
+            linkcolor=blue,
+            citecolor=blue,
+            urlcolor=blue]{hyperref}
+
+\definecolor{keywordcolor}{rgb}{0,0,0.6}
+\definecolor{commentcolor}{rgb}{0,0.5,0}
+\definecolor{stringcolor}{rgb}{0.6,0,0}
+\definecolor{backgroundcolor}{rgb}{0.95,0.95,0.95}
+
+\lstset{
+    language=Matlab,
+    backgroundcolor=\color{backgroundcolor},
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{keywordcolor}\bfseries,
+    commentstyle=\color{commentcolor}\itshape,
+    stringstyle=\color{stringcolor},
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+    stepnumber=1,
+    numbersep=8pt,
+    frame=none,
+    rulecolor=\color{black},
+    breaklines=true,
+    showstringspaces=false
+}
+
+\setstretch{1.2}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.2\baselineskip}
+\newcommand{\MATLAB}{\textsc{Matlab}}
+
+\geometry{margin=2.5cm}
+\onehalfspacing
+
+\lstset{
+  basicstyle=\ttfamily\small,
+  frame=single,
+  breaklines=true
+}
+
+\setlength{\parindent}{2em}
+
+\begin{document}
+
+\begin{titlepage}
+    \begin{center}
+		\Huge{Universidade de São Paulo}\\
+		\large{Escola de Engenharia de São Carlos}\\ 
+        %\vspace{.5cm}
+        \large{SEM0530 - Problemas de Engenharia Mecatrônica II}\\ 
+        \vspace{5cm}
+		\Large{Estudo da cinemática de uma partícula utilizando integradores numéricos em Matlab}\\ 
+		\vspace{0.3cm}
+    
+    \end{center}
+\vspace{5cm}
+	\begin{flushleft}
+		
+		Aluno: Enzo Larger Manfio  Nº USP: 16863802\\
+        Docente: Prof. Dr. Kayc Wayhs Lopes\\
+	
+    \end{flushleft}
+	
+	\vfill
+	\begin{center}
+		\vspace{5cm}
+			 São Carlos, Junho de 2026
+	\end{center}
+\end{titlepage}
+
+\newpage
+\tableofcontents
+
+
+\newpage
+\section{Introdução}
+A descrição de sistemas dinâmicos frequentemente faz uso de Equações Diferenciais, notoriamente difíceis quando não impossíveis de resolver analiticamente, tornando necessário o uso de métodos numéricos. Com isso, nesse trabalho será evidenciado a solução numérica de Equações Diferenciais aplicada ao estudo do movimento da partícula representada em \ref{problema}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.3 \textwidth]{sistemadinamico.pdf}
+    \caption{Sistema dinâmico analisado}
+    \label{problema}
+\end{figure}
+
+\par Mais especificamente, partindo das expressões para a velocidade em função do tempo e raio em função da posição angular, esta última será modelada como a solução de uma Equação Diferencial, sendo desenvolvido um script na linguagem de programação Matlab para resolvê-la numericamente e plotar os gráficos relativos ao movimento da partícula.
+
+\vspace{0.5\baselineskip}
+
+\section{Metodologia}
+
+\vspace{0.5\baselineskip}
+\subsection{Modelagem matemática}
+
+\noindent O módulo da velocidade v em função do tempo t é dada por \eqref{v(t)}, com N = 02.
+\begin{equation}
+    \label{v(t)}
+    v = 0.025(155 + N)(175 - t)\text{ mm/s}
+\end{equation}
+O raio r em função do ângulo $\theta$ é dada por \eqref{r(theta)}.
+\begin{equation}
+    \label{r(theta)}
+    r = 0.3(2 + \cos(\theta))\text{ m}
+\end{equation}
+Para um sistema descrito em coordenadas polares, $v$ está relacionada à $r$, $\theta$, e suas respectivas derivadas temporais por \eqref{odeio_coordenadas_polares}.
+\begin{equation}
+    \label{odeio_coordenadas_polares}
+    v = \sqrt{\dot{r}^2 + (r\dot{\theta})^2}
+\end{equation}
+Aplicando a Regra da Cadeia, obtemos \eqref{Regra da Cadeia}.
+\begin{equation}
+    \label{Regra da Cadeia}
+    \dot{r} = \frac{dr}{d\theta}\dot{\theta}
+\end{equation}
+Com $\frac{dr}{d\theta}$ sendo dada por \eqref{derivada_r}.
+\begin{equation}
+    \label{derivada_r}
+    \frac{dr}{d\theta} = -0.3\sin(\theta)
+\end{equation}
+Substituindo \eqref{Regra da Cadeia} em \eqref{odeio_coordenadas_polares} e isolando $\dot{\theta}$, obtêm-se \eqref{EDO}.
+\begin{equation}
+    \label{EDO}
+    \dot{\theta} = \frac{v}{\sqrt{\left(\frac{dr}{d\theta}\right)^2 + r^2}}
+\end{equation}
+\par Considerando $v$ uma função de $t$ e $\frac{dr}{d\theta}$ e $r$ funções de $\theta$, \eqref{EDO} constitui uma Equação Diferencial Ordinária (EDO) de primeira ordem não linear em $\theta$, cuja solução corresponde à $\theta$ em função do tempo, a partir da qual é possível determinar também $\dot{\theta}$ e $r$ em função do tempo utilizando \eqref{EDO} e \eqref{r(theta)}, respectivamente. 
+\vspace{0.5\baselineskip}
+
+\subsection{Implementação no \MATLAB}
+A fim de simplicidade, o programa foi desenvolvido como um único script, fazendo o uso de funções anônimas. Primeiro, define-se funções correspondentes à \eqref{v(t)}, \eqref{r(theta)}, \eqref{derivada_r}, depois, utilizando as três, a função correspondente à \eqref{EDO} e, por fim, utiliza-se o integrador ode45, oferecido pelo Matlab, que implementa o método Runge-Kutta de 4° e 5º ordem, para solucionar numericamente \eqref{EDO}.
+
+\begin{lstlisting}[language=Matlab, 
+caption = {Funções anônimas correspondentes à modelagem matemática},
+label = {lst:funcao_v_s}]
+v_t = @(t) 0.025*(155 + 02)*(175-t) / 10^3;
+
+r_teta = @(teta) 0.3*(2 + cos(teta));
+
+dr_dteta= @(teta) -0.3*sin(teta);
+
+velocidade_angular = @(t, teta) v_t(t) ./ sqrt(r_teta(teta).^2 + dr_dteta(teta).^2);
+
+solucao_EDO_teta = @(t_final, dt) ode45(velocidade_angular, 0:dt:t_final, 0);
+end
+\end{lstlisting}
+
+\par Uma vez calculados os valores de $\theta$, $r$, $\dot{\theta}$ e $v$ para o intervalo de tempo determinado, são plotados os gráficos de $\theta$, $r$, $\dot{\theta}$ e $v$ versus tempo, $\dot{\theta}$ versus $\theta$ e, utilizando a função polarplot, o gráfico polar representando a trajetória da partícula.  
+
+\vspace{0.5\baselineskip}
+
+\section{Resultados}
+
+\subsection{Gráficos de estado}
+Os gráficos de $\theta$, $\dot{\theta}$, $r$ e $v$ em função do tempo podem ser vistos em \ref{grafico_tempo}, enquanto o gráfico de $\dot{\theta}$ versus $\theta$ pode ser visto em \ref{Espaço de Fases}.
+\par Os gráficos de r e $\theta$ em função do tempo refletem a natureza periódica do movimento da partícula (com as descontinuidades do gráfico da posição angular sendo devido à normalização do ângulo para o intervalo [0 2$\pi$)), com o intervalo de tempo analisado, de 0 a 26 segundos, correspondendo à quatro voltas completas. O tempo necessário para a partícula dar 3 voltas completas corresponde ao 4° zero do gráfico de $\theta$ vs $t$, que é aproximadamente 25.49 segundos.
+\par Já o gráfico de $\dot{\theta}$ também reflete natureza oscilatória, porém com amplitude e frequência ligeiramente diminuindo entre ciclos, devido ao decrescimento da velocidade total ao longo do tempo. Ademais, é possível intuir pelas figuras que a velocidade angular e o raio estão em oposição de fase, com os instantes de menor raio sendo os de maior velocidade angular, e vice-versa.
+\par Observando \ref{Espaço de Fases} é possível distinguir quatro curvas, correspondentes aos quatro ciclos realizados no intervalo de tempo observado, com as curvas com menor excentricidade correspondendo aos ciclos mais tardios e as linhas horizontais podendo ser atribuídas às descontinuidades da normalização dos ângulos. Pela figura, percebe-se que a velocidade angular é máxima quando a partícula está na metade de um ciclo completo, isto é, quando $\theta = \pi$, o que corresponde, por \eqref{r(theta)}, à um mínimo do raio da trajetória, confirmando a intuição mencionada anteriormente.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9 \textwidth]{graficos_tempo.pdf}
+    \caption{Gráficos em função do tempo}
+    \label{grafico_tempo}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5 \textwidth]{espaço_fases.pdf}
+    \caption{$\dot{\theta}$ vs $\theta$}
+    \label{Espaço de Fases}
+\end{figure}
+
+\subsection{Trajetória da partícula}
+
+Em \ref{batatas} é apresentado o gráfico polar da trajetória da partícula, a qual corresponde à figura geométrica do Limaçon (ou Caracol) de Pascal Convexo.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5 \textwidth]{trajetória polar.pdf}
+    \caption{Trajetória da partícula}
+    \label{batatas}
+\end{figure}
+
+\section{Conclusão}
+Neste trabalho, analisou-se o movimento de uma partícula ao longo de uma trajetória em formato de limaçon. A modelagem matemática foi feita com base na descrição da trajetória e velocidade em coordenadas polares, resultando em uma Equação Diferencial Ordinária de 1° Ordem não-linear para a velocidade angular. Com isso, foi escrito u script em Matlab utilizando o integrador ode45 para resolver numericamente a EDO, calcular os demais parâmetros da cinemática da partícula, e representá-los graficamente.
+\par Com isso, foi possível observar a oposição de fase entre e o raio e a velocidade angular do movimento, bem como determinar o tempo necessário para a partícula realizar três voltas completas como sendo 25.49 segundos. Assim sendo, demonstrou-se a utilidade da modelagem de sistemas dinâmicos com equações diferenciais e a solução numérica destas.
+
+\end{document}
