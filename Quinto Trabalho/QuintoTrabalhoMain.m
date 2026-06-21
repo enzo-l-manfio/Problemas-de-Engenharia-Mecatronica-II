@@ -4,7 +4,7 @@ m = 2 + 02/100;
 k = 1000;
 omega = sqrt(k/m);
 
-impulso = @(t) double((t <= 0));
+impulso = @(t) double((t == 0));
 
 configuracoes = {0 @(t) 0;
                  5 @(t) 0;
@@ -13,7 +13,8 @@ configuracoes = {0 @(t) 0;
                  0 @(t) 5*sin(t*omega);
                  5 impulso};
 
-dt = 0.01;
+f_max = 4000;
+dt = 1/f_max;
 t = 0:dt:10;
 N = length(t);
 
@@ -23,7 +24,7 @@ ac = zeros(N, 1);
 
 titulos_y = ["$x$", "$\dot{x}$", "$\ddot{x}$"];
 
-for i = 1:5
+for i = 1:6
     c = configuracoes{i, 1};
     f = configuracoes{i, 2};
     [pos, vel, ac] = SolucaoEDO(m, c, k, f, 0, 10, t);
@@ -43,20 +44,34 @@ for i = 1:5
 end
 
 
-c = configuracoes{6, 1};
-f = configuracoes{6, 2};
-[pos, vel, ac] = SolucaoEDO(m, c, k, f, 0, 10, t);
+w = hann(N);
+pos_6_w = pos.*w ;
+Y = fft(pos_6_w);
+Y_6_norm = 2/N*abs(Y);
+    
 
-Y = fft(pos);
-Y_norm = 2/N*abs(Y);
+df = f_max/N;
+freq = 0:df:f_max-df;
 
-fs = 1/dt;
-df = fs/N;
-freq = 0:df:fs-df;
+figure(7);
+plot(freq, Y_6_norm);
+ylabel('Amplitude', 'Interpreter', 'latex');
+xlabel('Frequência (Hz)', 'Interpreter', 'latex');
+xlim([0 f_max/2])
+set(gca, 'FontSize', 30);
 
-figure(6);
-plot(freq, Y_norm);
-ylabel(titulos_y(1), 'Interpreter', 'latex');
-ylabel(titulos_y(2), 'Interpreter', 'latex');
-xlim([0 fs])
+figure(8)
+loglog(freq, Y_6_norm)
+ylabel('Amplitude', 'Interpreter', 'latex');
+xlabel('Frequência (Hz)', 'Interpreter', 'latex');
+xlim([0 f_max/2])
+grid on;
+set(gca, 'FontSize', 30);
+
+figure(9)
+semilogx(freq, angle(Y))
+ylabel('Fase (rad)', 'Interpreter', 'latex');
+xlabel('Frequência (Hz)', 'Interpreter', 'latex');
+xlim([0 f_max/2])
+grid on;
 set(gca, 'FontSize', 30);
