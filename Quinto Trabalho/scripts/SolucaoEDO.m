@@ -1,4 +1,4 @@
-function [pos, vel, ac] = SolucaoEDO(m, c, k, f, pos0, vel0, t)
+function [pos, vel] = SolucaoEDO(m, c, k, f, pos0, vel0, t)
 
     MatrizEstados = [0 1;
                      -k/m -c/m];
@@ -7,6 +7,4 @@ function [pos, vel, ac] = SolucaoEDO(m, c, k, f, pos0, vel0, t)
     [t, y] = ode45(dydt, t, [pos0 vel0]);
     pos = y(:, 1);
     vel = y(:, 2);
-   
-    ac = gradient(vel, t);
 end
