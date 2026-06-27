@@ -1,10 +1,14 @@
+clear;
+
 %%Importar Função de Resolver EDO
 SolucaoEDO = @SolucaoEDO;
 
 m = 2 + 02/100;
 k = 1000;
 omega = sqrt(k/m);
-
+omega_amortecido = sqrt(k/m - (5^2)/(4 * m^2));
+omega_amortecido_hz = omega_amortecido/(2 * pi);
+disp(omega_amortecido_hz);
 fs = 200;
 dt = 1/fs;
 t = 0:dt:10;
@@ -66,11 +70,11 @@ for i = 1:2:11
     figure(i + 1)
     plot(result(:, 1), result(:, 2));
     hold on;
-    pi = plot(result(1, 1), result(1, 2), 'o', 'MarkerSize', 10, 'MarkerFaceColor', 'r', 'DisplayName', 'Ponto Inicial');
-    pf = plot(result(end, 1), result(end, 2), 'o', 'MarkerSize', 10, 'MarkerFaceColor', 'g', 'DisplayName', 'Ponto Final');
+    p_i = plot(result(1, 1), result(1, 2), 'o', 'MarkerSize', 10, 'MarkerFaceColor', 'r', 'DisplayName', 'Ponto Inicial');
+    p_f = plot(result(end, 1), result(end, 2), 'o', 'MarkerSize', 10, 'MarkerFaceColor', 'g', 'DisplayName', 'Ponto Final');
     xlabel(titulos_y(1), 'Interpreter','latex');
     ylabel(titulos_y(2), 'Interpreter','latex');
-    legend([pi, pf], 'Ponto Inicial', 'Ponto Final');
+    legend([p_i, p_f], 'Ponto Inicial', 'Ponto Final');
     set(gca, 'FontSize', 30);
     n = n + 1;
 end
@@ -85,7 +89,7 @@ freq = 0:df:fs-df;
 
 figure(13)
 plot(freq, H_norm);
-xline(3.54, '--r', 'Label', '$\omega_0$', 'Interpreter', 'latex', 'LabelOrientation', 'horizontal', 'LabelVerticalAlignment', 'bottom', 'FontSize', 30);
+xline(omega_amortecido_hz, '--r', 'Label', '$\omega_0$', 'Interpreter', 'latex', 'LabelOrientation', 'horizontal', 'LabelVerticalAlignment', 'bottom', 'FontSize', 30);
 ylabel('Amplitude (m)');
 xlabel('Frequência');
 set(gca, 'FontSize', 30);
@@ -94,12 +98,12 @@ xlim([0, fs/2]);
 
 figure(14)
 yyaxis left
-loglog(freq, H_norm)
-ylabel('Amplitude (m)', 'Interpreter', 'latex');
+loglog(freq, 20*H_norm)
+ylabel('Amplitude (dB)', 'Interpreter', 'latex');
 yyaxis right
 semilogx(freq, H_ang);
 ylabel('Fase (rad)');
-xline(3.54, '--r', 'Label', '$\omega_0$', 'Interpreter', 'latex', 'LabelOrientation', 'horizontal', 'LabelVerticalAlignment', 'bottom', 'FontSize', 30);
+xline(omega_amortecido_hz, '--r', 'Label', '$\omega_0$', 'Interpreter', 'latex', 'LabelOrientation', 'horizontal', 'LabelVerticalAlignment', 'bottom', 'FontSize', 30);
 
 xlabel('Frequência (Hz)', 'Interpreter', 'latex');
 xlim([0 fs/2])

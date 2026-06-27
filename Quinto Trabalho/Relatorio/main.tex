@@ -1,0 +1,425 @@
+\documentclass[12pt,a4paper]{article}
+
+\usepackage{indentfirst}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[brazil]{babel}
+\usepackage{amsmath}
+\usepackage{geometry}
+\usepackage{setspace}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{setspace}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{caption}
+\usepackage[colorlinks=true,
+            linkcolor=blue,
+            citecolor=blue,
+            urlcolor=blue]{hyperref}
+
+\definecolor{keywordcolor}{rgb}{0,0,0.6}
+\definecolor{commentcolor}{rgb}{0,0.5,0}
+\definecolor{stringcolor}{rgb}{0.6,0,0}
+\definecolor{backgroundcolor}{rgb}{0.95,0.95,0.95}
+
+\lstset{
+    language=Matlab,
+    backgroundcolor=\color{backgroundcolor},
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{keywordcolor}\bfseries,
+    commentstyle=\color{commentcolor}\itshape,
+    stringstyle=\color{stringcolor},
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+    stepnumber=1,
+    numbersep=8pt,
+    frame=none,
+    rulecolor=\color{black},
+    breaklines=true,
+    showstringspaces=false
+}
+
+\setstretch{1.2}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.2\baselineskip}
+\newcommand{\MATLAB}{\textsc{Matlab}}
+
+\geometry{margin=2.5cm}
+\onehalfspacing
+
+\lstset{
+  basicstyle=\ttfamily\small,
+  frame=single,
+  breaklines=true
+}
+
+\setlength{\parindent}{2em}
+
+\begin{document}
+
+\begin{titlepage}
+    \begin{center}
+		\Huge{Universidade de São Paulo}\\
+		\large{Escola de Engenharia de São Carlos}\\ 
+        %\vspace{.5cm}
+        \large{SEM0530 - Problemas de Engenharia Mecatrônica II}\\ 
+        \vspace{5cm}
+		\Large{Estudo de um Oscilador Harmônico Amortecido com solução numérica de EDO e FFT em Matlab}\\ 
+		\vspace{0.3cm}
+    
+    \end{center}
+\vspace{5cm}
+	\begin{flushleft}
+		
+		Alunos: Enzo Larger Manfio  Nº USP: 16863802\\
+        \hphantom{Alunos:} Carlos Davi Carvalho de Lima dos Santos N° USP: 16813048\\
+        Docente: Prof. Dr. Kayc Wayhs Lopes\\
+	
+    \end{flushleft}
+	
+	\vfill
+	\begin{center}
+		\vspace{5cm}
+			 São Carlos, Junho de 2026
+	\end{center}
+\end{titlepage}
+
+\newpage
+\tableofcontents
+
+
+\newpage
+\section{Introdução}
+
+
+\par O Oscilador Harmônico Amortecido (OHA) é um dos modelos mais importantes da física, podendo ser aplicado a uma ampla gama de sistemas, desde pêndulos de relógio até circuitos elétricos, com um dos principais exemplos deste modelo sendo o sistema massa-mola-amortecedor, representado em [figura], o qual consiste em uma massa m sujeita a uma força externa f e presa a uma mola k e um amortecedor de coeficiente de amortecimento c.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.3 \textwidth]{problemas.pdf}
+    \caption{Sistema dinâmico analisado}
+    \label{problema}
+\end{figure}
+\par Com isso, neste trabalho, será apresentado e discutida a modelagem matemática do sistema massa-mola-amortecedor como uma Equação Diferencial Ordinária de Segunda Ordem, acompanhada de um código na linguagem de programação Matlab que numericamente resolva as equações para diferentes configurações do sistema, além de encontrar, utilizando a Transformada Rápida de Fourier (FFT), a Função de Resposta em Frequência (FRF) do sistema.
+
+\vspace{0.5\baselineskip}
+
+\section{Metodologia}
+
+\vspace{0.5\baselineskip}
+
+\subsection{Modelagem matemática}
+
+\subsubsection{OHA Como uma EDO de 2° Ordem}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5 \textwidth]{DCL.pdf}
+    \caption{Diagrama de Corpo Livre da massa}
+    \label{DCL}
+\end{figure}
+\par O diagrama de corpo livre da massa m pode ser visto em \ref{DCL}, em que $f(t)$ é a força externa aplicada, $f_k(x)$, a força aplicada pela mola, e $f_a(\dot{x})$, a força aplicada pelo amortecedor, com as duas últimas sendo dadas por \eqref{mola} e \eqref{amortecedor}, respectivamente.
+\begin{equation}
+    \label{mola}
+    f_k(x) = -kx
+\end{equation}
+\begin{equation}
+    \label{amortecedor}
+    f_a(\dot{x}) = -c\dot{x}
+\end{equation}
+
+Substituindo a soma das três forças na 2° Lei de Newton e manipulando a equação resultante, obtém-se \eqref{EDO}, uma Equação Diferencial Ordinária de Segunda Ordem que relaciona o forçamento externo à cinemática da massa m.
+\begin{equation}
+    \label{EDO}
+    m\ddot{x} + c\dot{x} + kx = f(t)
+\end{equation}
+
+\subsubsection{OHA como um Sistema de Equações}
+Aplicando as substituições \eqref{sub1} e \eqref{sub2}, é possível reescrever \eqref{EDO} como o sistema de equações \eqref{sistema}, dado em forma matricial por \eqref{matrizes}.
+\begin{equation}
+    \label{sub1}
+    y_1 = x
+\end{equation}
+\begin{equation}
+    \label{sub2}
+    y_2 = \dot{x}
+\end{equation}
+
+\begin{equation}
+    \label{sistema}
+    \begin{cases}
+        \dot{y_1} = y_2 \\
+        \dot{y_2} = -\frac{k}{m}y_1 - \frac{c}{m}y_2 + \frac{1}{m}f(t)
+    \end{cases}
+\end{equation}
+
+\begin{equation}
+    \label{matrizes}
+    \begin{bmatrix}
+        \dot{y_1}\\
+        \dot{y_2}
+    \end{bmatrix} =\begin{bmatrix}
+        0 & 1 \\
+        -\frac{k}{m} & -\frac{c}{m}
+    \end{bmatrix}\begin{bmatrix}
+        {y_1}\\
+        {y_2}
+    \end{bmatrix} + \begin{bmatrix}
+        0  \\
+        \frac{1}{m}
+    \end{bmatrix}f(t)
+\end{equation}
+
+\par Com \eqref{matrizes} constituindo a representação do sistema na forma do Espaço de Estados, e à qual é possível aplicar diretamente métodos numéricos de solução de EDOs de primeira ordem, como Runge-Kutta e Taylor.
+\subsubsection{Casos de Interesse}
+\par Quando o amortecimento e forçamento são ambos nulos, o sistema oscila sem perda de energia, de modo que x(t) corresponde a uma função cossenoide pura, cuja frequência $\omega_0$, dada por \eqref{frequencia_natural} corresponde à chamada Frequência Natural do sistema.
+\begin{equation}
+    \label{frequencia_natural}
+    \omega_0 = \sqrt{\frac{k}{m}}
+\end{equation}
+
+\par Adicionando-se amortecimento ao sistema, é possível distinguir entre três casos, a depender da configuração:
+\begin{itemize}
+  \item Amortecimento Sub-Crítico ($c<2\sqrt{km}$): O sistema oscila com amplitude decrescendo exponencialmente e frequência natural dada por \eqref{frequencia_amortecida}
+  \begin{equation}
+      \label{frequencia_amortecida}
+      \omega'_{0} = \sqrt{\omega_0^2 - \left(\frac{c}{2m}\right)^2}
+  \end{equation}
+  \item Amortecimento Super-Crítico ($c>2\sqrt{km}$): O sistema não oscila, tendendo lentamente ao equilíbrio
+  \item Amortecimento Crítico ($c=2\sqrt{km}$): O sistema não oscila, tendendo rapidamente ao equilíbrio
+\end{itemize}
+
+\par Nestes casos, o início do movimento, ainda muito influenciado pelas condições iniciais, é o chamado estado transiente, enquanto o estado para o qual o sistema converge com a passagem do tempo é chamado de estado estacionário.
+
+\par Existem incontáveis possíveis forçamentos aplicados a um sistema, com um caso particular de interesse sendo quando o forçamento aplicado é oscilatório. Neste caso, no regime estacionário, toda a energia inicial já foi dissipada, mas o forçamento periodicamente adiciona mais energia ao sistema, a qual é rapidamente dissipada pelo amortecimento, resultando em uma oscilação com a mesma frequência que o forçamento e amplitude constante, com exceção ao caso em que o forçamento possui a mesma frequência que a frequência natural do sistema. Neste caso, ocorre o fenômeno da ressonância, no qual a amplitude do sistema se torna crescente, tendendo ao infinito com a passagem do tempo.
+
+\subsubsection{Função de Resposta em Frequência}
+\par É possível caracterizar um sistema dinâmico a partir da sua Função de Resposta em Frequência, que expressa a relação entre um sinal de saída (no caso deste trabalho, a posição da massa) e um sinal de entrada (no caso deste trabalho, a força aplicada) como uma função da frequência da entrada. Mais especificamente, a FRF é uma função complexa cujo módulo corresponde ao ganho do sistema, definido como a razão entre as amplitudes da saída e entrada e cuja fase corresponde à fase da saída em relação à entrada.
+\par Com isso, é possível determinar a FRF obtendo a saída do sistema para uma entrada específica, (Assumindo condições iniciais nulas, já que a FRF concerne o sistema em regime estacionário), depois convertendo ambos para o domínio da frequência, e dividindo o primeiro pelo segundo. A entrada específica escolhida geralmente é uma função impulso, ou delta de dirac, definida por \eqref{dirac}, em que dt é a discretização de tempo adotada, já que no domínio da frequência ela corresponde a uma constante (isto é, uma sobreposição igual de todas as frequências) para $t_0 = 0$, tornando-a ideal para estimativas. Para visualizar a FRF, o seu módulo e fase são plotados versus o espectro da frequência, e aplicando-se escala logarítmica obtém-se o chamado Diagrama de Bode do sistema.
+\begin{equation}
+    \label{dirac}
+    \delta(t) = \begin{cases}
+        \frac{1}{dt},\text{ } t_0 < t < t_0 + dt)\\
+        0\text{, Para demais pontos}
+    \end{cases}
+\end{equation}
+
+\subsubsection{Transformada Rápida de Fourier}
+\par Para a conversão do domínio do tempo para o domínio da frequência, será utilizada a Transformada Rápida de Fourier, um algoritmo que retorna, para um determinado sinal periódico, as amplitudes de cada frequência que compõe este sinal. É importante mencionar que a FFT possui desvantagens em sua implementação, podendo ser citados os efeitos de aliasing e vazamento espectral.
+\par O aliasing ocorre quando a discretização do tempo é demasiado lenta para a fft identificar frequências elevadas, com a máxima frequência possível de ser detectada, a chamada frequência de Nyquist, correspondente à $\frac{1}{2dt}$. Já o vazamento espectral ocorre quando o sinal não realiza um número inteiro de ciclos dentro do intervalo analisado, pois a FFT pressupõe que o sinal repete o intervalo analisado, resultando em descontinuidades no sinal efetivamente processado pela FFT, a qual detecta frequências inexistentes no sinal original.
+\par Nesta aplicação, é esperado que a resposta ao impulso possua somente a frequência de ressonância perceptível, de modo que escolhendo uma discretização de tempo que a inclua não resultará em perda de informação por aliasing. Além disso, conforme será evidenciado na seção de resultados, a resposta do sistema ao impulso decai a zero dentro do intervalo analisado, de modo que não ocorre vazamento espectral significativo. Com isso, estratégias comuns para prevenção de vazamento espectral, como windowing (que consiste na aplicação de uma distribuição no sinal antes do processamento pela fft, para minimizar os valores nos extremos do intervalo), não serão adotadas.
+
+\vspace{0.5\baselineskip}
+
+\subsection{Implementação no \MATLAB}
+\vspace{2\baselineskip}
+
+\par Para a solução do sistema para o caso geral, foi definida uma função que recebe os parâmetros deste, monta o sistema de equações correspondente, aplica o integrador ode45 do Matlab, que implementa o método numérico Runge Kutta de 4° e 5° Ordem, para resolver o sistema obtendo a posição e velocidade.
+
+\begin{lstlisting}[language=Matlab, 
+caption = {Função para solução do caso geral},
+label = {lst:SolucaoEDO}]
+function [pos, vel] = SolucaoEDO(m, c, k, f, pos0, vel0, t)
+
+    MatrizEstados = [0 1;
+                     -k/m -c/m];
+    dydt = @(t, y) MatrizEstados *y + [0; f(t)/m];
+    
+    [t, y] = ode45(dydt, t, [pos0 vel0]);
+    pos = y(:, 1);
+    vel = y(:, 2);
+end
+\end{lstlisting}
+
+\par No script principal, são definidas os parâmetros k e m do sistema, as 6 diferentes configurações de amortecimento e forçamento, com o último sendo definido como uma função anônima para cada caso. A discretização dt foi definida de modo a possibilitar a detecção de frequências de até 100 hz, valor muito maior do que a frequência natural de oscilação do sistema amortecido (cerca de 3.54 hz), de modo a minimizar os efeitos do vazamento espectral.
+
+\begin{lstlisting}[language=Matlab, 
+caption = {Definição dos parâmetros e configurações},
+label = {lst:SolucaoEDO}]
+m = 2 + 02/100;
+k = 1000;
+omega = sqrt(k/m);
+omega_amortecido = sqrt(k/m - (5^2)/(4 * m^2));
+omega_amortecido_hz = omega_amortecido/(2 * pi);
+
+fs = 200;
+dt = 1/fs;
+t = 0:dt:10;
+N = length(t);
+
+impulso = @(t) 1/dt * double((t < dt & t>=0));
+
+configuracoes = {0 @(t) 0;
+                 5 @(t) 0;
+                 5 @(t) 5*sin(t*omega/2);
+                 5 @(t) 5*sin(t*omega);
+                 0 @(t) 5*sin(t*omega);
+                 5 impulso};
+\end{lstlisting}
+\par Com isso, a resposta do sistema para cada configuração pode ser obtida aplicando SolucaoEDO à cada configuração. Para obter a FRF, foi aplicada a FFT, por meio da função oferecida pelo Matlab, à posição da massa para a configuração 6 (sinal de saída) e ao impulso (sinal de entrada) e dividiu-se o primeiro pelo segundo. Para a melhor análise e visualização da FRF, considerou-se o seu módulo e ângulo de fase.
+
+\begin{lstlisting}[language=Matlab, 
+caption = {Aplicação da FFT e determinação da FRF},
+label = {lst:SolucaoEDO}]
+P = fft(pos);
+I = fft(impulso(t));
+H = P./I ;
+H_norm = abs(H);
+H_ang = unwrap(angle(H));
+\end{lstlisting}
+\par Por fim, foram plotados os gráficos da posição e velocidade em função do tempo e o Espaço de Fases ($\dot{x}\text{ versus } x$) para cada configuração, bem como o gráfico da amplitude versus frequência e o diagrama de Bode correspondentes à FRF. É importante mencionar que os dois últimos gráficos, devido à implementação da fft, são espelhados horizontalmente em relação à metade do domínio da frequência, que corresponde à frequência máxima possível de ser detectada, então os gráficos foram ajustados para mostrar apenas a primeira metade do domínio.
+\vspace{0.5\baselineskip}
+
+\section{Resultados}
+
+\subsection{Respostas do Sistema}
+
+\subsubsection{Configuração 1}
+
+\par Os gráficos de $x$, $\dot{x}$ versus o tempo podem ser visto em \ref{grafico_1_1}.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7 \textwidth]{Figure_1.pdf}
+    \caption{Deslocamento e velocidade versus tempo para configuração 1}
+    \label{grafico_1_1}
+\end{figure}
+
+\par Como o amortecimento é nulo, o sistema não perde energia, de modo que a amplitude se mantêm. Alia-se isso ao forçamento nulo, e a resposta esperada do sistema corresponde à uma cossenoide pura para a posição (e, portanto, uma senoide pura de mesma frequência para a velocidade), que foi precisamente o que foi observado. Além disso, a partir do distância entre as cristas indicadas,  foi possível calcular o período da oscilação tanto de $x$ quanto de $\dot{x}$ como aproximadamente 0.280 s, valor muito próximo de 0.2844 s, o valor esperado para o período do sistema, considerando a frequência natural de oscilação calculada com \eqref{frequencia_natural}, feita a conversão de rad/s para Hz.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7 \textwidth]{Figure_2.pdf}
+    \caption{Espaço de fases para configuração 1}
+    \label{espaço_fases_1}
+\end{figure}
+\par Em \ref{espaço_fases_1}, é possível ver o gráfico do espaço de fases, o qual constitui uma elipse perfeita, indicando que ao longo do movimento o mesmo conjunto de estados se repete, algo esperado de um movimento oscilatório em que a energia se conserva.
+
+\subsubsection{Configuração 2}
+
+\par Os gráficos de $x$ e $\dot{x}$ versus o tempo podem ser visto em \eqref{grafico_1_2}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7 \textwidth]{Figure_3.pdf}
+    \caption{Deslocamento e velocidade versus tempo para configuração 2}
+    \label{grafico_1_2}
+\end{figure}
+
+\par Como o amortecimento aplicado ($c = 5 N.s/m$) é menor que o amortecimento crítico ($2\sqrt{km} = 89.9 N.s/m$), o sistema é classificado como subamortecido, mantendo caráter oscilatório porém com amplitude decrescendo exponencialmente com o tempo. A partir das distâncias entre as cristas indicadas, foi possível estimar o período da oscilação tanto de $x$ quanto $\dot{x}$ como cerca de 0.285, valor muito próximo da frequência natural, algo de se esperar já que o amortecimento aplicado é muito menor do que a razão k/m, resultando em uma diferença de frequência pequena demais para ser percebida dentro da discretização adotada.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7 \textwidth]{Figure_4.pdf}
+    \caption{Espaço de fases para configuração 2}
+    \label{espaço_fases_2}
+\end{figure}
+
+\par Como, com o amortecimento, ocorre dissipação de energia, a elipse da configuração 1 se torna uma espiral, mantendo o formato circular mas tendendo à $x = \dot{x} = 0$ no regime estacionário, isto é, à posição de equilíbrio com energia cinética nula.
+
+\subsubsection{Configuração 3}
+\par Os gráficos de $x$ e $\dot{x}$ versus t pode ser visto em \eqref{grafico_1_3}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7 \textwidth]{Figure_5.pdf}
+    \caption{Deslocamento e velocidade versus tempo para a configuração 3}
+    \label{grafico_1_3}
+\end{figure}
+
+\par Nesta configuração, é possível observar o efeito da aplicação de uma força oscilante sobre o sistema, o qual é negligenciável no estado transiente mas ligeiramente notável no estado transitório, no qual é possível observar uma oscilação de pequena amplitude. A partir das cristas indicadas na figura, foi possível estimar o período de oscilação no regime estacionário como aproximadamente 0.37 s, isto é, o dobro do período de oscilação natural do sistema, correspondente à metade da frequência natural do sistema sem amortecimento, precisamente a frequência do forçamento aplicado.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7 \textwidth]{Figure_6.pdf}
+    \caption{Espaço de Fases para configuração 3}
+    \label{espaço_fases_3}
+\end{figure}
+
+\par Isso se reflete no diagrama de Espaço de Fases visto na figura \ref{espaço_fases_3}, no qual é possível observar que a espiral não tende mais a zero. Ao invés disso, ela possui um ponto de inflexão a partir do qual ela se aproxima de uma elipse de diâmetros menores que a configuração 1, ou seja, à um movimento oscilatório com energia constante inferior à inicial. 
+
+\subsubsection{Configuração 4}
+\par Os gráficos de $x$ e $\dot{x}$ versus t pode ser visto em \ref{grafico_1_4}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7 \textwidth]{Figure_7.pdf}
+    \caption{Deslocamento e velocidade versus tempo para a Configuração 4}
+    \label{grafico_1_4}
+\end{figure}
+
+\par Com um forçamento de maior frequência e, portanto potência, o efeito do forçamento no regime estacionário observado na configuração 3 se torna mais notável. A partir das cristas indicadas, o período de oscilação no regime estacionário foi estimado como 0.28 s, correspondente à frequência natural de oscilação do sistema sem amortecimento, ou seja, à frequência do forçamento aplicado.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7 \textwidth]{Figure_8.pdf}
+    \caption{Espaço de fases para configuração 4}
+    \label{espaço_fases_4}
+\end{figure}
+
+\par No gráfico do espaço de fases na figura \ref{espaço_fases_4}, é possível observar o mesmo efeito que na configuração 3, com uma elipse final de maiores diâmetros, já que a maior potência do forçamento na configuração 4 implica em uma maior quantidade de energia fornecida para o sistema e, portanto, uma amplitude maior.
+
+
+\subsubsection{Configuração 5}
+\par Os gráficos de $x$ e $\dot{x}$ versus t pode ser visto em \ref{grafico_1_5}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7 \textwidth]{Figure_9.pdf}
+    \caption{Deslocamento e velocidade versus tempo para configuração 5}
+    \label{grafico_1_5}
+\end{figure}
+
+\par Sem amortecimento, o sistema passa a ter a mesma frequência natural que na configuração 1, que corresponde também à frequência do forçamento aplicado. Com isso, ocorre o fenômeno da ressonância, que se reflete, nos gráficos de \ref{grafico_1_5}, em uma amplitude crescente do deslocamento e velocidade e, no gráfico do espaço de fases em \ref{espaço_fases_5}, na elipse da configuração 1 servindo de ponto inicial para uma espiral crescente, refletindo o aumento da energia total do sistema conforme o forçamento adiciona energia que não é dissipada.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7 \textwidth]{Figure_10.pdf}
+    \caption{Espaço de fases para configuração 5}
+    \label{espaço_fases_5}
+\end{figure}
+
+\subsubsection{Configuração 6}
+
+\par Os gráficos de $x$ e $\dot{x}$ versus t pode ser visto em \ref{grafico_1_6}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7 \textwidth]{Figure_11.pdf}
+    \caption{Deslocamento e velocidade versus tempo para configuração 6}
+    \label{grafico_1_6}
+\end{figure}
+ \par Verifica-se que os gráficos de \ref{grafico_1_6} efetivamente correspondem aos gráficos de deslocamento e velocidade da configuração 2, porém com menor amplitude, já que ambas as configurações possuem os mesmos parâmetros de amortecimento e forcamento no regime estacionário, com a diferença sendo que enquanto a configuração 2 inicia com velocidade de 10 m/s, a configuração 6 inicia com condições iniciais nulas (padrão para a determinação de FRFs) e com um impulso pontual. Dessa maneira, ambas as configurações recebem uma determinada quantidade de energia inicial, com a recebida na configuração 6 sendo menor.
+
+ \begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7 \textwidth]{Figure_12.pdf}
+    \caption{Espaço de fases para configuração 6}
+    \label{espaço_fases_6}
+\end{figure}
+
+\par Essa diferença de comportamento inicial se torna visível no espaço de fases da configuração 6 \ref{espaço_fases_6}, no qual o sistema inicia com condições nulas, e após o impulso representado pela reta inicia a trajetória em espiral observada em \ref{espaço_fases_2}.
+
+\subsection{FRF}
+
+\par O Gráfico da amplitude da FRF versus o espectro da frequência pode ser visto em \ref{FFT}, e o diagrama de Bode, em \ref{Bode}, com a linha correspondente à frequência natural de oscilação do sistema na configuração 6 estando destacada.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7 \textwidth]{Figure_13.pdf}
+    \caption{Amplitude da FRF versus frequência para a configuração 6}
+    \label{FFT}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7 \textwidth]{Figure_14.pdf}
+    \caption{Diagrama de Bode para a configuração 6}
+    \label{Bode}
+\end{figure}
+
+\par Com isso, é possível observar que a amplitude da FRF atinge um pico com a frequência natural de oscilação do sistema, indicando que o ganho do sistema é máximo para um forçamento com esta frequência, fato que corresponde precisamente ao fenômeno de ressonância, com frequências distantes da de ressonância possuindo ganho proporcionalmente bem inferior. Também é possível observar uma mudança brusca na fase da FRF perto da frequência natural, com frequências menores que a natural correspondendo à ângulos mais próximos de concordância de fase, frequências levemente maiores que a natural, à ângulos mais próximos de oposição de fase, e com o aumento da frequência ocorre um gradual realinhamento de fase, interrompido por uma mudança brusca para frequências próximas à 100 hz.
+
+\section{Conclusão}
+
+\par Neste trabalho, foi possível evidenciar, através da análise numérica com Matlab, o estudo de sistemas dinâmicos seguindo o modelo do Oscilador Harmônico Amortecido, generalizável para múltiplos sistemas físicos para além do sistema massa-mola, tomado como exemplo neste trabalho.
+\par Foi possível observar os efeitos esperados com a adição de amortecimento (Perda de energia, refletida em diminuição na amplitude de oscilação) e de forçamentos oscilantes (Manutenção de movimento oscilatório em estado estacionário e ressonância para um forçamento com mesma frequência que a frequência natural do sistema). Com a aplicação da Transformada Rápida de Fourier, obteve-se a Função de Resposta em Frequência do sistema, permitindo determinar como o sistema responde, em termos de aumento de amplitude e diferença de fase, a forçamentos de diferentes frequências.
+\par Para um estudo mais aprofundado do sistema, seria interessante a determinação de sua Função de Transferência (FT) com a Transformada de Laplace, que permitiria uma análise mais geral da estabilidade do sistema sob diferentes configurações.
+\end{document}
